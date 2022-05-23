@@ -1,0 +1,34 @@
+{
+  "name": "tp1",
+  "version": "1.0.0",
+  "description": "## TP n°1",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "devstart": "nodemon index.js"
+  },
+  "author": "moi",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "body-parser": "^1.20.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "express-jwt": "^6.1.1",
+    "express-jwt-permissions": "^1.3.6",
+    "express-validator": "^6.14.0",
+    "jsonwebtoken": "^8.5.1",
+    "luxon": "^2.3.1",
+    "pg": "^8.7.3",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.17.0",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "jest": "^27.5.1",
+    "nodemon": "^2.0.15",
+    "supertest": "^6.2.2"
+  }
+}
