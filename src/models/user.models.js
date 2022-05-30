@@ -1,6 +1,6 @@
 const { sequelize } = require('./db');
 const { Sequelize, DataTypes } = require('sequelize');
-
+const Task = require("./task.models.js");
  const User = sequelize.define('User', {
     id: {
         type: DataTypes.UUID,
@@ -34,4 +34,6 @@ const { Sequelize, DataTypes } = require('sequelize');
 }, {
 
 });
+User.hasMany(Task)
+Task.belongsTo(User)
 module.exports = User;

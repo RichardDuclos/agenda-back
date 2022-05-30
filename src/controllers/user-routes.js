@@ -15,7 +15,7 @@ require('dotenv').config()
 //GET ALL USERS
 userRoutes.route('/')
     .get(guard.check([[Roles.Admin]]), async (req, res) => {
-        res.status(200).send( await userRepository.getUsers());
+        res.status(200).send( await userRepository.getUsers(null, [['createdAt', 'ASC']]));
     })
     .post(
         body('username').notEmpty()
@@ -25,7 +25,7 @@ userRoutes.route('/')
         body('username').isLength({max: 30})
             .withMessage("too-long"),
         body('username').custom(async val => {
-            return userRepository.getUserByUsername(val).then(user => {
+            return userRepository.getUser({username: val}).then(user => {
                 if (user) {
                     return Promise.reject();
                 }
@@ -33,20 +33,30 @@ userRoutes.route('/')
         })
             //check if username is already used
             .withMessage('already-used'),
-        body('firstName').notEmpty()
-            .withMessage("missing"),
-        body('firstName').isLength({max: 60})
-            .withMessage('too-long'),
-        body('lastName').notEmpty()
-            .withMessage("missing"),
-        body('lastName').isLength({max: 60})
-            .withMessage('too-long'),
-        body('password').notEmpty()
-            .withMessage("missing"),
-        body('password').isLength({ min: 8 })
-            .withMessage("too-short"),
-        body('password').isLength({ max: 256 })
-            .withMessage("too-long"),
+        body('firstName')
+            .notEmpty().withMessage("missing")
+            .isLength({max: 60}).withMessage('too-long'),
+        body('lastName')
+            .notEmpty().withMessage("missing")
+            .isLength({max: 60}).withMessage('too-long'),
+        body('password')
+            .notEmpty().withMessage("missing")
+            .isLength({ min: 8 }).withMessage("too-short")
+            .isLength({ max: 256 }).withMessage("too-long")
+            .matches(/\d/).withMessage("must-include-numbers")
+            .matches(/[a-zA-Z]/).withMessage("must-include-letters")
+            .matches(/[a-z]/).withMessage("must-include-lowercase")
+            .matches(/[A-Z]/).withMessage("must-include-uppercase"),
+        body('passwordConfirm')
+            .notEmpty().withMessage('missing')
+            .custom((value, { req }) => {
+            if (value !== req.body.password) {
+                throw new Error('no-match');
+            }
+
+            // Indicates the success of this synchronous custom validator
+            return true;
+        }),
         async (req, res) => {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -83,16 +93,20 @@ userRoutes.route('/:userId/')
             lastName: req.body.lastName,
             username: req.body.username
         }
-        updateUser(user, data)
+        userRepository.updateUser(user, data)
         res.status(204).send();
     })
     .delete(guard.check(Roles.Admin), async (req, res) => {
-
-        let result = await userRepository.deleteUser(req.params.id);
-        if(!result) {
-            throw new Error("Delete failed");
+        let user = await userRepository.getUserById(req.params.userId)
+        if(!user) {
+            return res.status(404).send()
         }
-        res.status(204).send();
+        let result = await userRepository.deleteUser(user)
+        console.log(result);
+        if(!result) {
+            throw new Error("Delete failed")
+        }
+        res.status(204).send()
 });
 
 

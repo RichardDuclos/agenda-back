@@ -1,5 +1,6 @@
 const { sequelize } = require('./db');
 const { Sequelize, DataTypes } = require('sequelize');
+const User = require("./user.models.js");
 
 const Task = sequelize.define('Task', {
     id: {
@@ -32,6 +33,10 @@ const Task = sequelize.define('Task', {
         type: DataTypes.TIME,
         allowNull: true
     },
+    frequency: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
     progression: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -40,4 +45,4 @@ const Task = sequelize.define('Task', {
 }, {
 
 });
-module.exports = User;
+module.exports = Task;

@@ -1,10 +1,12 @@
 const express = require('express');
 const { initializeConfigMiddlewares, initializeErrorMiddlwares } = require('./middlewares');
-const userRoutes = require('../controllers/user-routes');
-const authRoutes = require('../controllers/auth-routes');
-const { sequelize } = require('../models/db');
-const bodyParser = require('body-parser');
+const userRoutes = require('../controllers/user-routes')
+const authRoutes = require('../controllers/auth-routes')
+const taskRoutes = require('../controllers/task-routes')
+const { sequelize } = require('../models/db')
+const bodyParser = require('body-parser')
 const userRepository = require('../repositories/user-repository')
+const taskRepository = require('../repositories/task-repository')
 class WebServer {
     app = undefined;
     port = 3000;
@@ -37,6 +39,7 @@ class WebServer {
     }
     _initializeRoutes() {
         this.app.use('/users', userRoutes.initializeRoutes());
+        this.app.use('/tasks', taskRoutes.initializeRoutes());
         this.app.use('/auth', authRoutes.initializeRoutes());
     }
 }

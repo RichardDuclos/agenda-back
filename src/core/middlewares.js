@@ -39,7 +39,7 @@ const initLoggerMiddlware = (app) => {
             const requestDurationMs = end.diff(begin).toMillis();
             const requestDuration = `Duration: ${requestDurationMs}ms`;
 
-            console.log(`[${requestDate}] - [${remoteIP}] - [${httpInfo}] - [${requestDuration}]`);
+            console.log(`[${requestDate}] - [${remoteIP}] - [${httpInfo}] - [${requestDuration}] - [status ${res.statusCode}]`);
         })
         next();
     });

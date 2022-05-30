@@ -1,11 +1,15 @@
 const User = require('../models/user.models');
+const Task = require('../models/task.models');
 const bcrypt = require("bcrypt");
-
 const { sequelize } = require('../models/db');
 const { Op } = require("sequelize");
-const getUsers = async function () {
+const getUsers = async function (where, order) {
     return await User.findAll({
-        attributes: ["id", "firstName", "lastName", "password"]
+        attributes: ["id", "username", "firstName", "lastName", "password"],
+        where: where,
+        order: order,
+        include: Task
+
     });
 }
 const getUserById = async function (id) {
@@ -13,18 +17,13 @@ const getUserById = async function (id) {
         where: {
             id:  id
         },
-        include:
-            [
-            ]
-
-
+        include: Task
     });
 }
-const getUserByUsername = async function (data) {
+const getUser = async function (where) {
     return await User.findOne({
-        where: {
-            username: data
-        }
+        where: where,
+        include: Task
     })
 }
 const createUser = async function (data) {
@@ -66,14 +65,8 @@ const updateUser = async function (user, data) {
     }
     user.save()
 }
-const deleteUser = async function(id) {
-    await User.destroy({
-       where : {
-           id : id
-       }
-    });
-
-    return true;
+const deleteUser = async function(user) {
+    return await user.destroy()
 }
 /*const updateUser = async function (data) {
     await User.update({
@@ -125,7 +118,7 @@ module.exports = {
     getUsers,
     getUserById,
     createUser,
-    getUserByUsername,
+    getUser,
     deleteUser,
     checkPassword,
     Seed,
