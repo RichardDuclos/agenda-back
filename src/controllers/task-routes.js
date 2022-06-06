@@ -1,5 +1,5 @@
 const express = require('express')
-
+const uuid = require('uuid');
 const taskRoutes = express.Router();
 const userRepository = require('../repositories/user-repository');
 const taskRepository = require('../repositories/task-repository');
@@ -21,11 +21,12 @@ taskRoutes.route('/')
             id: task.id,
             name: task.name,
             wholeDay: task.wholeDay,
-            frequency: task.frequency,
+            date: task.date,
             begginingDate: task.begginingDate,
             endDate: task.endDate,
             begginingTime: task.begginingTime,
             endTime: task.endTime,
+            repeatingId: task.repeatingId,
             progression: task.progression,
             createdAt: task.createdAt
         }})
@@ -37,8 +38,7 @@ taskRoutes.route('/')
         body('wholeDay').notEmpty().withMessage('missing')
             .toBoolean()
             .custom((val, {req})=> {
-                console.log(req.body.begginingTime)
-                if(val === true) {
+/*                if(val === true) {
                     if((!req.body.begginingDate||
                         !req.body.endDate)
                         ||
@@ -56,9 +56,12 @@ taskRoutes.route('/')
                         throw new Error("yes-time-no-dates-if-not-wholeday")
 
                     }
-                }
+                }*/
                 return true;
             }),
+        body('date')
+            .isDate().withMessage('wrong-type')
+            .optional(),
         body('begginingDate')
             .isDate().withMessage('wrong-type')
             .optional(),
@@ -92,18 +95,63 @@ taskRoutes.route('/')
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() })
             }
-            let task = {
-                name: req.body.name,
-                wholeDay: req.body.wholeDay,
-                progression: 0,
-                user: req.user.id,
-                frequency: req.body.frequency,
-                begginingTime: req.body.begginingTime,
-                endTime: req.body.begginingTime,
-                begginingDate: req.body.begginingDate,
-                endDate: req.body.endDate
+            let begginingTime = req.body.begginingTime
+            if(begginingTime) {
+                begginingTime = `${begginingTime}:00`.padStart(5, '0')
             }
-            taskRepository.createTask(task)
+            let endTime = req.body.endTime
+            if(endTime) {
+                endTime = `${endTime}:00`.padStart(5, '0')
+            }
+            console.log(typeof req.body.frequency)
+            if(parseInt(req.body.frequency) === 0) {
+                let task = {
+                    name: req.body.name,
+                    wholeDay: req.body.wholeDay,
+                    progression: 0,
+                    user: req.user.id,
+                    begginingTime:  begginingTime,
+                    endTime: endTime,
+                    date: req.body.date,
+                    begginingDate: req.body.begginingDate,
+                    endDate: req.body.endDate,
+                    repeatingId: null
+                }
+                console.log(await taskRepository.createTask(task))
+            } else {
+                const repeatingId = uuid.v4();
+                const firstDay = new Date(req.body.begginingDate)
+                const lastDay = new Date(req.body.endDate)
+                let loopDay = new Date(firstDay)
+                const difference = Math.floor((lastDay - firstDay) / (1000 * 3600 * 24) + 1)
+                for(let i = 1; i < difference; i++) {
+                    if(loopDay.getDay() === 6 || loopDay.getDay() === 0) {
+                        loopDay.setDate(loopDay.getDate() + 1);
+                        continue;
+                    }
+                    if((req.body.frequency === 1) ||
+                        (req.body.frequency === 2 && (loopDay.getDay() === req.body.dayOfWeek) )
+                    || (req.body.frequency === 3 && (loopDay.getDate() === req.body.dayOfMonth))) {
+                        let task = {
+                            name: req.body.name,
+                            wholeDay: req.body.wholeDay,
+                            progression: 0,
+                            user: req.user.id,
+                            begginingTime:  begginingTime,
+                            endTime: endTime,
+                            date: loopDay,
+                            begginingDate: null,
+                            endDate: null,
+                            repeatingId: repeatingId
+                        }
+                        await taskRepository.createTask(task)
+                    }
+                    loopDay.setDate(loopDay.getDate() + 1);
+
+                }
+
+            }
+
             res.status(201).send()
         });
 
@@ -151,7 +199,14 @@ taskRoutes.route('/:idTask')
             endTime: undefined,
             progression: req.body.progression,
         }
-        taskRepository.updateTask(filteredTask, data)
+        if(req.body.applyToAll === true && req.body.repeatingId) {
+            const tasks = await taskRepository.getTasks({repeatingId: req.body.repeatingId}, null)
+            for(const task of tasks) {
+                await taskRepository.updateTask(task, data)
+            }
+        } else {
+            await taskRepository.updateTask(filteredTask, data)
+        }
         res.status(204).send()
     })
 

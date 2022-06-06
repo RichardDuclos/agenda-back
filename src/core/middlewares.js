@@ -22,7 +22,7 @@ const initJWTMiddleware = (app) => {
 
 const initJsonHandlerMiddlware = (app) => app.use(express.json());
 
-const initCorsMiddlware = (app) => app.use(cors());
+const initCorsMiddlware = (app) => app.use(cors({origin: '*'}));
 
 const initJSONMiddleware = (app) => app.use(express.json());
 

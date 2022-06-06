@@ -12,6 +12,10 @@ const Task = sequelize.define('Task', {
         type: DataTypes.STRING(50),
         allowNull: false
     },
+    date: {
+        type: DataTypes.DATEONLY,
+        allowNull: true
+    },
     begginingDate: {
         type: DataTypes.DATEONLY,
         allowNull: true
@@ -33,9 +37,9 @@ const Task = sequelize.define('Task', {
         type: DataTypes.TIME,
         allowNull: true
     },
-    frequency: {
-        type: DataTypes.INTEGER,
-        allowNull: false
+    repeatingId : {
+        type: DataTypes.UUID,
+        allowNull: true
     },
     progression: {
         type: DataTypes.INTEGER,

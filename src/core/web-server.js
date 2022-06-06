@@ -30,7 +30,7 @@ class WebServer {
 
     start() {
         this.app.listen(this.port, () => {
-            console.log(`Example app listening on port ${this.port}`);
+            console.log(`Agenda app listening on port ${this.port}`);
         });
     }
 

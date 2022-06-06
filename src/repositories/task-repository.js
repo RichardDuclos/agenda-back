@@ -2,7 +2,7 @@ const Task = require('../models/task.models');
 const { sequelize } = require('../models/db');
 const { Op } = require("sequelize");
 const getTasks = async function (where, order) {
-    return await User.findAll({
+    return await Task.findAll({
         attributes: ["id", "name", "begginingDate", "endDate", "wholeDay",
         "begginingTime", "endTime", "progression"],
         where: where,
@@ -26,26 +26,25 @@ const createTask = async function (data) {
     if((task.name === undefined) ||
         (task.wholeDay === undefined) ||
         (task.progression === undefined) ||
-        (task.user === undefined) ||
-        (task.frequency === undefined)) {
+        (task.user === undefined)) {
         return false;
     }
     const entity = await Task.create({
         name : task.name,
         wholeDay : task.wholeDay,
         progression : task.progression,
+        date: task.date,
         begginingDate: task.begginingDate,
         endDate: task.endDate,
         begginingTime: task.begginingTime,
         endTime: task.endTime,
-        frequency: task.frequency
+        repeatingId: task.repeatingId
     });
     entity.setUser(task.user);
     return true;
 
 }
 const updateTask = async function (task, data) {
-    console.groupCollapsed(data)
     if(typeof data.name !== "undefined") {
         task.name = data.name
     }
