@@ -23,12 +23,14 @@ const getTask = async function (where) {
 }
 const createTask = async function (data) {
     const task = data;
+
     if((task.name === undefined) ||
         (task.wholeDay === undefined) ||
         (task.progression === undefined) ||
         (task.user === undefined)) {
         return false;
     }
+
     const entity = await Task.create({
         name : task.name,
         wholeDay : task.wholeDay,
