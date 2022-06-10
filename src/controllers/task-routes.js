@@ -56,15 +56,27 @@ taskRoutes.route('/')
             }),
         body('date')
             .notEmpty().withMessage("missing")
-            .isDate().withMessage('wrong-type')
+            .isDate( {format: "YYYY-MM-DD", strictMode: true}).withMessage('wrong-type')
             .optional(),
         body('begginingDate')
             .notEmpty().withMessage("missing")
-            .isDate().withMessage('wrong-type')
+            .isDate({format: "YYYY-MM-DD", strictMode: true}).withMessage('wrong-type')
             .optional(),
         body('endDate')
             .notEmpty().withMessage("missing")
-            .isDate().withMessage('wrong-type')
+            .isDate({format: "YYYY-MM-DD", strictMode: true}).withMessage('wrong-type')
+            .custom((val, {req}) => {
+                const begginingDate = new Date(req.body.begginingDate)
+                const endDate = new Date(val)
+                if(!(begginingDate instanceof Date && !isNaN(begginingDate)) || !(endDate instanceof Date && !isNaN(endDate))) {
+                    return
+                }
+                if(endDate < begginingDate) {
+                    throw new Error("must-be-superior-than-beggining-date")
+                }
+                return true
+
+            })
             .optional(),
         body('begginingTime')
             .isNumeric().withMessage('wrong-type')
@@ -114,7 +126,10 @@ taskRoutes.route('/')
                 }
                 const begginingDate = val.begginingDate
                 const endDate = val.endDate;
-                if(begginingDate === "" || endDate === "") {
+                if(begginingDate === "" || endDate === "" || !(new Date(begginingDate) instanceof Date && !isNaN(new Date(begginingDate)))  || !(new Date(endDate) instanceof Date && !isNaN(new Date(endDate)))){
+                    return
+                }
+                if(new Date(begginingDate) > new Date(endDate)) {
                     return
                 }
                 const begginingTime = val.begginingTime
